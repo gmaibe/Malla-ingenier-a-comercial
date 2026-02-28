@@ -6,73 +6,86 @@
 
 <style>
 body{
-font-family: 'Segoe UI', sans-serif;
-background:#f7f5f2;
-margin:0;
+font-family:'Segoe UI', sans-serif;
+background:#f8f7ff;
 padding:20px;
 }
 
 h1{
 text-align:center;
-color:#5c4033;
+color:#2D2A63;
+}
+
+.progressBox{
+max-width:600px;
+margin:auto;
+margin-bottom:20px;
+}
+
+.bar{
+height:18px;
+background:#E5E3F2;
+border-radius:20px;
+overflow:hidden;
+}
+
+.barFill{
+height:100%;
+background:#6C5CE7;
+width:0%;
+transition:0.4s;
 }
 
 .grid{
 display:flex;
-gap:20px;
+gap:18px;
 overflow-x:auto;
 }
 
 .semestre{
 background:#fff;
 padding:10px;
-border-radius:12px;
-min-width:220px;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
+border-radius:14px;
+min-width:240px;
+box-shadow:0 6px 12px rgba(0,0,0,0.08);
 }
 
 .semestre h2{
 text-align:center;
-font-size:16px;
-color:#8b5e3c;
+color:#6C5CE7;
 }
 
 .ramo{
-background:#e6d3b3;
+background:#FADADD;
 margin:6px 0;
 padding:8px;
 border-radius:8px;
 cursor:pointer;
 position:relative;
-transition:0.2s;
 }
 
 .ramo.aprobado{
-background:#9ec89e;
+background:#B39DFF;
 text-decoration:line-through;
 }
 
 .ramo.bloqueado{
-background:#ddd;
+background:#E5E3F2;
 cursor:not-allowed;
 }
 
-.tooltip{
-visibility:hidden;
-background:#333;
-color:#fff;
-padding:5px;
-border-radius:6px;
-position:absolute;
-bottom:110%;
-left:50%;
-transform:translateX(-50%);
-font-size:12px;
-white-space:nowrap;
+.req{
+font-size:11px;
+opacity:0.7;
 }
-
-.ramo.bloqueado:hover .tooltip{
-visibility:visible;
+button{
+display:block;
+margin:15px auto;
+padding:6px 12px;
+border:none;
+border-radius:8px;
+background:#6C5CE7;
+color:white;
 }
 </style>
 </head>
@@ -81,75 +94,84 @@ visibility:visible;
 
 <h1>Malla Ingeniería Comercial</h1>
 
+<div class="progressBox">
+<div id="textoProgreso"></div>
+<div class="bar"><div class="barFill" id="barra"></div></div>
+</div>
+
+<button onclick="resetear()">Resetear progreso</button>
+
 <div class="grid" id="malla"></div>
 
 <script>
-// 🔥 EDITA SOLO ESTA PARTE CON TU MALLA COMPLETA
-const malla = {
-"1° Sem": [
-{id:"introEco", nombre:"Intro a la Economía"},
-{id:"gestionEmp", nombre:"Gestión de Empresa"},
-{id:"mate1", nombre:"Métodos Matemáticos I"},
+
+// 👉 TU MALLA (puedes agregar más ramos)
+const malla={
+"1° Semestre":[
+{id:"introEco", nombre:"Introducción a la Economía"},
+{id:"mate1", nombre:"Métodos Matemáticos I"}
 ],
-"2° Sem": [
-{id:"micro1", nombre:"Intro Microeconomía", req:["introEco"]},
-{id:"personas", nombre:"Gestión de Personas", req:["gestionEmp"]},
-{id:"mate2", nombre:"Métodos Matemáticos II", req:["mate1"]},
-],
-"3° Sem": [
-{id:"macro1", nombre:"Intro Macroeconomía", req:["micro1"]},
-{id:"marketing", nombre:"Marketing", req:["gestionEmp"]},
-],
-"4° Sem":[
-{id:"finanzas", nombre:"Finanzas", req:["marketing"]},
+"2° Semestre":[
+{id:"micro", nombre:"Intro Microeconomía", req:["introEco"]},
+{id:"mate2", nombre:"Métodos Matemáticos II", req:["mate1"]}
 ]
 };
 
-// cargar progreso
-let aprobados = JSON.parse(localStorage.getItem("aprobados")) || [];
+let aprobados=JSON.parse(localStorage.getItem("aprobados"))||[];
 
-function crearMalla(){
-const cont = document.getElementById("malla");
+function nombre(id){
+for(let s in malla)
+for(let r of malla[s])
+if(r.id===id) return r.nombre;
+return id;
+}
+
+function progreso(){
+let total=0;
+for(let s in malla) total+=malla[s].length;
+let p=aprobados.length;
+
+document.getElementById("textoProgreso").innerText=
+`Progreso: ${p} / ${total} ramos`;
+
+document.getElementById("barra").style.width=
+((p/total)*100)+"%";
+}
+
+function render(){
+const cont=document.getElementById("malla");
 cont.innerHTML="";
 
-for(let semestre in malla){
-const col = document.createElement("div");
+for(let sem in malla){
+const col=document.createElement("div");
 col.className="semestre";
-col.innerHTML=`<h2>${semestre}</h2>`;
+col.innerHTML=`<h2>${sem}</h2>`;
 
-malla[semestre].forEach(ramo=>{
-const div = document.createElement("div");
+malla[sem].forEach(r=>{
+let faltan=r.req? r.req.filter(x=>!aprobados.includes(x)):[];
+let bloqueado=faltan.length>0;
+
+const div=document.createElement("div");
 div.className="ramo";
-div.innerText=ramo.nombre;
+if(bloqueado) div.classList.add("bloqueado");
+if(aprobados.includes(r.id)) div.classList.add("aprobado");
 
-let bloqueado=false;
-
-if(ramo.req){
-const faltan = ramo.req.filter(r=>!aprobados.includes(r));
-if(faltan.length){
-bloqueado=true;
-div.classList.add("bloqueado");
-
-const tip=document.createElement("div");
-tip.className="tooltip";
-tip.innerText="Falta aprobar: "+faltan.join(", ");
-div.appendChild(tip);
-}
-}
-
-if(aprobados.includes(ramo.id))
-div.classList.add("aprobado");
+div.innerHTML=
+`${r.nombre}
+${r.req?`<div class="req">Req: ${r.req.map(nombre).join(", ")}</div>`:""}
+${bloqueado?`<div class="req">❌ Falta: ${faltan.map(nombre).join(", ")}</div>`:""}`;
 
 div.onclick=()=>{
 if(bloqueado) return;
 
-if(aprobados.includes(ramo.id))
-aprobados=aprobados.filter(x=>x!=ramo.id);
+if(aprobados.includes(r.id))
+aprobados=aprobados.filter(x=>x!==r.id);
 else
-aprobados.push(ramo.id);
+aprobados.push(r.id);
 
 localStorage.setItem("aprobados",JSON.stringify(aprobados));
-crearMalla();
+render();
+progreso();
 };
 
 col.appendChild(div);
@@ -159,7 +181,18 @@ cont.appendChild(col);
 }
 }
 
-crearMalla();
+function resetear(){
+if(confirm("¿Seguro quieres borrar el progreso?")){
+localStorage.removeItem("aprobados");
+aprobados=[];
+render();
+progreso();
+}
+}
+
+render();
+progreso();
+
 </script>
 
 </body>
