@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Malla Ingeniería Comercial</title>
+<title>Malla Ingeniería Comercial - Economía FEN</title>
 
 <style>
 body{
@@ -14,12 +14,18 @@ padding:20px;
 h1{
 text-align:center;
 color:#2D2A63;
+margin-bottom:10px;
 }
 
-.progressBox{
-max-width:600px;
+.progressContainer{
+max-width:700px;
 margin:auto;
 margin-bottom:20px;
+}
+
+.progressLabel{
+font-size:14px;
+margin-bottom:4px;
 }
 
 .bar{
@@ -27,9 +33,10 @@ height:18px;
 background:#E5E3F2;
 border-radius:20px;
 overflow:hidden;
+margin-bottom:10px;
 }
 
-.barFill{
+.fill{
 height:100%;
 background:#6C5CE7;
 width:0%;
@@ -38,7 +45,7 @@ transition:0.4s;
 
 .grid{
 display:flex;
-gap:18px;
+gap:20px;
 overflow-x:auto;
 }
 
@@ -46,7 +53,7 @@ overflow-x:auto;
 background:#fff;
 padding:10px;
 border-radius:14px;
-min-width:240px;
+min-width:260px;
 box-shadow:0 6px 12px rgba(0,0,0,0.08);
 }
 
@@ -62,6 +69,7 @@ padding:8px;
 border-radius:8px;
 cursor:pointer;
 position:relative;
+font-size:13px;
 }
 
 .ramo.aprobado{
@@ -75,9 +83,10 @@ cursor:not-allowed;
 }
 
 .req{
-font-size:11px;
+font-size:10px;
 opacity:0.7;
 }
+
 button{
 display:block;
 margin:15px auto;
@@ -86,17 +95,21 @@ border:none;
 border-radius:8px;
 background:#6C5CE7;
 color:white;
+cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
-<h1>Malla Ingeniería Comercial</h1>
+<h1>Malla Ingeniería Comercial - Economía</h1>
 
-<div class="progressBox">
-<div id="textoProgreso"></div>
-<div class="bar"><div class="barFill" id="barra"></div></div>
+<div class="progressContainer">
+<div class="progressLabel" id="ramoTexto"></div>
+<div class="bar"><div class="fill" id="ramoBar"></div></div>
+
+<div class="progressLabel" id="creditTexto"></div>
+<div class="bar"><div class="fill" id="creditBar"></div></div>
 </div>
 
 <button onclick="resetear()">Resetear progreso</button>
@@ -105,19 +118,87 @@ color:white;
 
 <script>
 
-// 👉 TU MALLA (puedes agregar más ramos)
-const malla={
+const malla = {
+
+/* CICLO BÁSICO */
+
 "1° Semestre":[
-{id:"introEco", nombre:"Introducción a la Economía"},
-{id:"mate1", nombre:"Métodos Matemáticos I"}
+{id:"introEco", nombre:"Introducción a la Economía", creditos:6},
+{id:"gestionEmp", nombre:"Gestión de Empresa", creditos:6},
+{id:"programacion", nombre:"Programación para Analítica de Datos", creditos:6},
+{id:"tecInfo", nombre:"Tecnología y Sistemas de Información", creditos:6},
+{id:"mate1", nombre:"Métodos Matemáticos I", creditos:6},
+{id:"comunicacion", nombre:"Comunicación", creditos:3}
 ],
+
 "2° Semestre":[
-{id:"micro", nombre:"Intro Microeconomía", req:["introEco"]},
-{id:"mate2", nombre:"Métodos Matemáticos II", req:["mate1"]}
+{id:"microIntro", nombre:"Introducción a la Microeconomía", creditos:6, req:["introEco"]},
+{id:"gestionPersonas", nombre:"Gestión de Personas", creditos:6, req:["gestionEmp"]},
+{id:"contabilidad", nombre:"Contabilidad", creditos:6, req:["gestionEmp"]},
+{id:"mate2", nombre:"Métodos Matemáticos II", creditos:6, req:["mate1"]},
+{id:"ingles1", nombre:"Inglés I", creditos:3}
+],
+
+"3° Semestre":[
+{id:"macroIntro", nombre:"Introducción a la Macroeconomía", creditos:6, req:["mate2","introEco"]},
+{id:"marketing", nombre:"Marketing", creditos:6, req:["gestionEmp"]},
+{id:"estad1", nombre:"Estadística I", creditos:6, req:["programacion","mate1"]},
+{id:"mate3", nombre:"Métodos Matemáticos III", creditos:6, req:["mate2","gestionEmp"]},
+{id:"ingles2", nombre:"Inglés II", creditos:3, req:["ingles1"]},
+{id:"pensamiento", nombre:"Introducción al Pensamiento Económico y Político", creditos:3, req:["introEco"]}
+],
+
+"4° Semestre":[
+{id:"ecoAplicada", nombre:"Economía Aplicada", creditos:6, req:["macroIntro","microIntro"]},
+{id:"finanzas", nombre:"Finanzas", creditos:6, req:["contabilidad","mate2","estad1"]},
+{id:"datos", nombre:"Razonamiento Basado en Datos", creditos:6, req:["programacion","tecInfo","estad1"]},
+{id:"estad2", nombre:"Estadística II", creditos:6, req:["estad1","mate2"]},
+{id:"mate4", nombre:"Métodos Matemáticos IV", creditos:6, req:["mate3"]},
+{id:"ingles3", nombre:"Inglés III", creditos:3, req:["ingles2"]}
+],
+
+/* CICLO DISCIPLINAR */
+
+"5° Semestre":[
+{id:"metodosCuant1", nombre:"Métodos Cuantitativos I", creditos:6, req:["datos","estad2","mate4"]},
+{id:"macro1", nombre:"Macroeconomía I", creditos:6, req:["macroIntro"]},
+{id:"micro1", nombre:"Microeconomía I", creditos:6, req:["microIntro","ecoAplicada"]},
+{id:"histEco", nombre:"Historia Económica", creditos:6, req:["macroIntro","microIntro"]},
+{id:"ingles4", nombre:"Inglés IV", creditos:3, req:["ingles3"]},
+{id:"com1", nombre:"Comunicación I", creditos:3, req:["comunicacion"]}
+],
+
+"6° Semestre":[
+{id:"electivoNegocios", nombre:"Electivo Negocios para Economía", creditos:6},
+{id:"metodosCuant2", nombre:"Métodos Cuantitativos II", creditos:6, req:["metodosCuant1"]},
+{id:"macro2", nombre:"Macroeconomía II", creditos:6, req:["macro1"]},
+{id:"micro2", nombre:"Microeconomía II", creditos:6, req:["micro1"]},
+{id:"tallerPolitica", nombre:"Taller de Política Pública", creditos:6, req:["ecoAplicada","com1"]},
+{id:"electivoSocial1", nombre:"Electivo Entorno Social I", creditos:3},
+{id:"libre1", nombre:"Electivo Libre I", creditos:3}
+],
+
+"7° Semestre":[
+{id:"tallerProf1", nombre:"Taller Práctico Profesional/Social I", creditos:6},
+{id:"tallerProf2", nombre:"Taller Práctico Profesional/Social II", creditos:6},
+{id:"macro3", nombre:"Macroeconomía III", creditos:6, req:["macro2"]},
+{id:"micro3", nombre:"Microeconomía III", creditos:6, req:["micro2"]},
+{id:"electivoSocial2", nombre:"Electivo Entorno Social II", creditos:3},
+{id:"libre2", nombre:"Electivo Libre II", creditos:3}
+],
+
+"8° Semestre":[
+{id:"prof1", nombre:"Electivo de Profundización I", creditos:6},
+{id:"prof2", nombre:"Electivo de Profundización II", creditos:6},
+{id:"prof3", nombre:"Electivo de Profundización III", creditos:6},
+{id:"macro4", nombre:"Macroeconomía IV", creditos:6, req:["macro2","metodosCuant1","tallerPolitica"]},
+{id:"micro4", nombre:"Microeconomía IV", creditos:6, req:["micro2","metodosCuant1","tallerPolitica"]},
+{id:"libre3", nombre:"Electivo Libre III", creditos:3}
 ]
+
 };
 
-let aprobados=JSON.parse(localStorage.getItem("aprobados"))||[];
+let aprobados = JSON.parse(localStorage.getItem("aprobados")) || [];
 
 function nombre(id){
 for(let s in malla)
@@ -127,15 +208,30 @@ return id;
 }
 
 function progreso(){
-let total=0;
-for(let s in malla) total+=malla[s].length;
-let p=aprobados.length;
+let totalR=0;
+let totalC=0;
+let aprobC=0;
 
-document.getElementById("textoProgreso").innerText=
-`Progreso: ${p} / ${total} ramos`;
+for(let s in malla){
+malla[s].forEach(r=>{
+totalR++;
+totalC+=r.creditos;
+if(aprobados.includes(r.id))
+aprobC+=r.creditos;
+});
+}
 
-document.getElementById("barra").style.width=
-((p/total)*100)+"%";
+document.getElementById("ramoTexto").innerText=
+`Ramos aprobados: ${aprobados.length} / ${totalR}`;
+
+document.getElementById("ramoBar").style.width=
+(aprobados.length/totalR*100)+"%";
+
+document.getElementById("creditTexto").innerText=
+`Créditos aprobados: ${aprobC} / ${totalC}`;
+
+document.getElementById("creditBar").style.width=
+(aprobC/totalC*100)+"%";
 }
 
 function render(){
@@ -157,7 +253,7 @@ if(bloqueado) div.classList.add("bloqueado");
 if(aprobados.includes(r.id)) div.classList.add("aprobado");
 
 div.innerHTML=
-`${r.nombre}
+`${r.nombre} (${r.creditos} cr)
 ${r.req?`<div class="req">Req: ${r.req.map(nombre).join(", ")}</div>`:""}
 ${bloqueado?`<div class="req">❌ Falta: ${faltan.map(nombre).join(", ")}</div>`:""}`;
 
