@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Malla Ingeniería Comercial</title>
+
+<style>
+body{
+font-family: 'Segoe UI', sans-serif;
+background:#f7f5f2;
+margin:0;
+padding:20px;
+}
+
+h1{
+text-align:center;
+color:#5c4033;
+}
+
+.grid{
+display:flex;
+gap:20px;
+overflow-x:auto;
+}
+
+.semestre{
+background:#fff;
+padding:10px;
+border-radius:12px;
+min-width:220px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+.semestre h2{
+text-align:center;
+font-size:16px;
+color:#8b5e3c;
+}
+
+.ramo{
+background:#e6d3b3;
+margin:6px 0;
+padding:8px;
+border-radius:8px;
+cursor:pointer;
+position:relative;
+transition:0.2s;
+}
+
+.ramo.aprobado{
+background:#9ec89e;
+text-decoration:line-through;
+}
+
+.ramo.bloqueado{
+background:#ddd;
+cursor:not-allowed;
+}
+
+.tooltip{
+visibility:hidden;
+background:#333;
+color:#fff;
+padding:5px;
+border-radius:6px;
+position:absolute;
+bottom:110%;
+left:50%;
+transform:translateX(-50%);
+font-size:12px;
+white-space:nowrap;
+}
+
+.ramo.bloqueado:hover .tooltip{
+visibility:visible;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Malla Ingeniería Comercial</h1>
+
+<div class="grid" id="malla"></div>
+
+<script>
+// 🔥 EDITA SOLO ESTA PARTE CON TU MALLA COMPLETA
+const malla = {
+"1° Sem": [
+{id:"introEco", nombre:"Intro a la Economía"},
+{id:"gestionEmp", nombre:"Gestión de Empresa"},
+{id:"mate1", nombre:"Métodos Matemáticos I"},
+],
+"2° Sem": [
+{id:"micro1", nombre:"Intro Microeconomía", req:["introEco"]},
+{id:"personas", nombre:"Gestión de Personas", req:["gestionEmp"]},
+{id:"mate2", nombre:"Métodos Matemáticos II", req:["mate1"]},
+],
+"3° Sem": [
+{id:"macro1", nombre:"Intro Macroeconomía", req:["micro1"]},
+{id:"marketing", nombre:"Marketing", req:["gestionEmp"]},
+],
+"4° Sem":[
+{id:"finanzas", nombre:"Finanzas", req:["marketing"]},
+]
+};
+
+// cargar progreso
+let aprobados = JSON.parse(localStorage.getItem("aprobados")) || [];
+
+function crearMalla(){
+const cont = document.getElementById("malla");
+cont.innerHTML="";
+
+for(let semestre in malla){
+const col = document.createElement("div");
+col.className="semestre";
+col.innerHTML=`<h2>${semestre}</h2>`;
+
+malla[semestre].forEach(ramo=>{
+const div = document.createElement("div");
+div.className="ramo";
+div.innerText=ramo.nombre;
+
+let bloqueado=false;
+
+if(ramo.req){
+const faltan = ramo.req.filter(r=>!aprobados.includes(r));
+if(faltan.length){
+bloqueado=true;
+div.classList.add("bloqueado");
+
+const tip=document.createElement("div");
+tip.className="tooltip";
+tip.innerText="Falta aprobar: "+faltan.join(", ");
+div.appendChild(tip);
+}
+}
+
+if(aprobados.includes(ramo.id))
+div.classList.add("aprobado");
+
+div.onclick=()=>{
+if(bloqueado) return;
+
+if(aprobados.includes(ramo.id))
+aprobados=aprobados.filter(x=>x!=ramo.id);
+else
+aprobados.push(ramo.id);
+
+localStorage.setItem("aprobados",JSON.stringify(aprobados));
+crearMalla();
+};
+
+col.appendChild(div);
+});
+
+cont.appendChild(col);
+}
+}
+
+crearMalla();
+</script>
+
+</body>
+</html>
